@@ -242,9 +242,9 @@ flowchart TD
     RD -->|children| FI1
     RD -->|children| FI2
     RD -->|children| DI1
-    FI1 -->|chunks[].message_id| C1
-    FI1 -->|chunks[].message_id| C2
-    FI2 -->|chunks[].message_id| C3
+    FI1 -->|chunks| C1
+    FI1 -->|chunks| C2
+    FI2 -->|chunks| C3
     DI1 -->|nested children| C4
 ```
 
@@ -387,15 +387,15 @@ classDiagram
     class ChunkRef {
         +u64 channel_id
         +u64 message_id
-        +[u8; 32] sha256
-        +[u8; 12] nonce
+        +Bytes32 sha256
+        +Bytes12 nonce
         +u32 size_cipher
         +u32 size_plain
     }
     RootPointer --> Dir : root_inode_msg_id
     Dir --> Dir : children (subdirs)
     Dir --> File : children (files)
-    File --> ChunkRef : chunks[]
+    File --> ChunkRef : chunks
 ```
 
 ### 5. Mount: WinFSP <-> async Store
