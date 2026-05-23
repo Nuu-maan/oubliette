@@ -49,20 +49,47 @@ if ($winfspFound) {
 Section 'Copying files'
 
 $required = @('oubliette.exe', 'oubliette-gui.exe')
-foreach ($f in $required) {
-    $src = Join-Path $ScriptDir $f
-    if (-not (Test-Path $src)) {
-        Write-Host ''
-        Write-Host "  ERROR: $f not found next to install.ps1" -ForegroundColor Red
-        Write-Host "  Expected at: $src" -ForegroundColor Red
-        exit 1
+
+# Search paths, in order of preference:
+#   1. Next to install.ps1 (a distributed bundle)
+#   2. ..\target\release\ (built from source with cargo build --release)
+#   3. ..\target\debug\   (built from source with cargo build)
+$searchDirs = @(
+    $ScriptDir,
+    (Join-Path $ScriptDir '..\target\release'),
+    (Join-Path $ScriptDir '..\target\debug')
+)
+
+$sourceDir = $null
+foreach ($dir in $searchDirs) {
+    $allHere = $true
+    foreach ($f in $required) {
+        if (-not (Test-Path (Join-Path $dir $f))) { $allHere = $false; break }
+    }
+    if ($allHere) {
+        $sourceDir = (Resolve-Path $dir).Path
+        break
     }
 }
+
+if (-not $sourceDir) {
+    Write-Host ''
+    Write-Host '  ERROR: oubliette.exe and oubliette-gui.exe not found.' -ForegroundColor Red
+    Write-Host '  Searched:' -ForegroundColor Red
+    foreach ($dir in $searchDirs) { Write-Host "      $dir" -ForegroundColor Red }
+    Write-Host ''
+    Write-Host '  If you cloned the repo, build them first:' -ForegroundColor Yellow
+    Write-Host '      cargo build --release' -ForegroundColor White
+    Write-Host '  ...then re-run this installer.' -ForegroundColor Yellow
+    exit 1
+}
+
+Info "Using binaries from: $sourceDir"
 
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 
 foreach ($f in $required) {
-    $src = Join-Path $ScriptDir $f
+    $src = Join-Path $sourceDir $f
     $dst = Join-Path $InstallDir $f
     Copy-Item -Force $src $dst
     OK "$f"
