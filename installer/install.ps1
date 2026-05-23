@@ -86,12 +86,32 @@ if (-not $sourceDir) {
 
 Info "Using binaries from: $sourceDir"
 
+# Stop any currently-running instances so we can overwrite them
+$running = Get-Process oubliette,oubliette-gui -ErrorAction SilentlyContinue
+if ($running) {
+    Info 'Closing currently-running Oubliette before overwrite...'
+    $running | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 700
+}
+
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 
 foreach ($f in $required) {
     $src = Join-Path $sourceDir $f
     $dst = Join-Path $InstallDir $f
-    Copy-Item -Force $src $dst
+
+    # Retry copy briefly in case Windows hasn't released the handle yet
+    $attempts = 0
+    while ($true) {
+        try {
+            Copy-Item -Force $src $dst -ErrorAction Stop
+            break
+        } catch {
+            $attempts++
+            if ($attempts -ge 5) { throw }
+            Start-Sleep -Milliseconds 400
+        }
+    }
     OK "$f"
 }
 
