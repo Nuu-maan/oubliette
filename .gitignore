@@ -1,0 +1,30 @@
+# Rust build artifacts
+/target/
+*.pdb
+
+# IDE / editor
+/.vscode/
+/.idea/
+*.swp
+*.swo
+
+# Test artifacts at the project root
+/*.bin
+/*.log
+/tmp_writes/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local secrets — never commit
+config.toml
+master_key
+*.key
+*.pem
+
+# Bundled WinFSP DLL (download from winfsp.dev or installer)
+winfsp-x64.dll
+winfsp-x86.dll
+winfsp-a64.dll

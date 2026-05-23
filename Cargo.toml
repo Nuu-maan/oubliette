@@ -1,0 +1,52 @@
+[package]
+name = "oubliette"
+version = "0.1.0"
+edition = "2024"
+description = "Discord channels as an encrypted, chunked filesystem"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+serenity = { version = "0.12", default-features = false, features = ["client", "gateway", "model", "http", "rustls_backend"] }
+
+aes-gcm = "0.10"
+sha2 = "0.10"
+rand = "0.8"
+hex = { version = "0.4", features = ["serde"] }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+clap = { version = "4", features = ["derive"] }
+
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+dirs = "5"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
+bytes = "1"
+futures = "0.3"
+
+[target.'cfg(windows)'.dependencies]
+winfsp = "0.13"
+winfsp-sys = "0.12"
+windows = { version = "0.61", features = ["Win32_Foundation"] }
+eframe = { version = "0.29", default-features = false, features = ["default_fonts", "glow"] }
+tray-icon = "0.19"
+
+[[bin]]
+name = "oubliette"
+path = "src/main.rs"
+
+[[bin]]
+name = "oubliette-gui"
+path = "src/bin/gui_main.rs"
+
+[target.'cfg(windows)'.build-dependencies]
+winfsp_build = "0.1"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
