@@ -887,7 +887,7 @@ fn run_mount(
         .sector_size(4096)
         .sectors_per_allocation_unit(1)
         .max_component_length(255)
-        .file_info_timeout(10_000)
+        .file_info_timeout(60_000)
         .case_sensitive_search(true)
         .case_preserved_names(true)
         .unicode_on_disk(true)

@@ -24,7 +24,9 @@ use winfsp_sys::FILE_ACCESS_RIGHTS;
 const UNIX_EPOCH_TO_FILETIME_SECS: u64 = 11_644_473_600;
 const FILE_ATTRIBUTE_DIRECTORY: u32 = 0x10;
 const FILE_ATTRIBUTE_NORMAL: u32 = 0x80;
+const FILE_ATTRIBUTE_OFFLINE: u32 = 0x1000;
 const FILE_DIRECTORY_FILE: u32 = 0x0000_0001;
+const READDIR_PARALLELISM: usize = 8;
 
 static WRITE_COUNTER: AtomicU64 = AtomicU64::new(0);
 
@@ -120,7 +122,7 @@ fn fill_file_info_from_inode(file_info: &mut FileInfo, inode: &Inode) {
     };
     file_info.file_attributes = match inode {
         Inode::Dir { .. } => FILE_ATTRIBUTE_DIRECTORY,
-        Inode::File { .. } => FILE_ATTRIBUTE_NORMAL,
+        Inode::File { .. } => FILE_ATTRIBUTE_OFFLINE,
     };
     file_info.reparse_tag = 0;
     file_info.allocation_size = (size + 4095) & !4095;
@@ -650,25 +652,38 @@ impl FileSystemContext for OublietteFs {
         };
 
         if marker.is_none() {
-            let children = self
+            let store = self.store.clone();
+            let msg_id = handle.msg_id;
+            let infos: Vec<(String, Inode)> = self
                 .runtime
-                .block_on(async {
-                    let inode = self.store.read_inode(handle.msg_id).await?;
-                    match inode {
-                        Inode::Dir { children, .. } => Ok::<_, OubError>(children),
-                        _ => Err(OubError::Other("not a dir".into())),
-                    }
+                .block_on(async move {
+                    use futures::stream::{self, StreamExt};
+                    let dir_inode = store
+                        .read_inode(msg_id)
+                        .await
+                        .map_err(|_| ())?;
+                    let children = match dir_inode {
+                        Inode::Dir { children, .. } => children,
+                        _ => return Err(()),
+                    };
+                    let entries: Vec<Option<(String, Inode)>> = stream::iter(children.into_iter())
+                        .map(|(name, child_msg)| {
+                            let store = store.clone();
+                            async move {
+                                store.read_inode(child_msg).await.ok().map(|i| (name, i))
+                            }
+                        })
+                        .buffer_unordered(READDIR_PARALLELISM)
+                        .collect()
+                        .await;
+                    Ok(entries.into_iter().flatten().collect())
                 })
                 .map_err(|_| STATUS_NOT_A_DIRECTORY)?;
 
-            let lock = handle.buffer.acquire(true, Some(children.len() as u32))?;
-            for (name, child_msg) in &children {
-                let child_inode = self
-                    .runtime
-                    .block_on(self.store.read_inode(*child_msg))
-                    .map_err(|_| STATUS_OBJECT_NAME_NOT_FOUND)?;
+            let lock = handle.buffer.acquire(true, Some(infos.len() as u32))?;
+            for (name, child_inode) in &infos {
                 let mut entry: DirInfo<255> = DirInfo::new();
-                fill_file_info_from_inode(entry.file_info_mut(), &child_inode);
+                fill_file_info_from_inode(entry.file_info_mut(), child_inode);
                 entry.set_name(name)?;
                 lock.write(&mut entry)?;
             }
