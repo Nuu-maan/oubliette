@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" role="img" aria-label="Data flow: local file → chunks → encrypt → shard → Discord channels">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0e1a"/>
+      <stop offset="100%" stop-color="#161b2e"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#4f8df0"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="400" fill="url(#bg2)"/>
+
+  <!-- ─── Stage backgrounds ─── -->
+  <g font-family="'JetBrains Mono','Consolas',monospace" font-size="13" text-anchor="middle">
+    <!-- 1. Local file -->
+    <rect x="40"  y="140" width="140" height="120" rx="10" fill="#1e2740" stroke="#3b486b"/>
+    <text x="110" y="120" fill="#e6e9f5" font-size="14" font-weight="700">local file</text>
+    <text x="110" y="280" fill="#7d88a8">on disk</text>
+    <!-- file icon -->
+    <g transform="translate(80 170)">
+      <rect width="60" height="72" rx="4" fill="#2a3458" stroke="#4f8df0" stroke-width="1.5"/>
+      <line x1="10" y1="20" x2="50" y2="20" stroke="#4f8df0" stroke-width="1" opacity="0.6"/>
+      <line x1="10" y1="32" x2="50" y2="32" stroke="#4f8df0" stroke-width="1" opacity="0.6"/>
+      <line x1="10" y1="44" x2="50" y2="44" stroke="#4f8df0" stroke-width="1" opacity="0.6"/>
+      <line x1="10" y1="56" x2="40" y2="56" stroke="#4f8df0" stroke-width="1" opacity="0.6"/>
+    </g>
+
+    <!-- 2. Chunker -->
+    <rect x="240" y="140" width="160" height="120" rx="10" fill="#1e2740" stroke="#3b486b"/>
+    <text x="320" y="120" fill="#e6e9f5" font-size="14" font-weight="700">chunker</text>
+    <text x="320" y="280" fill="#7d88a8">9 MiB plain blocks</text>
+    <g transform="translate(260 168)">
+      <rect width="28" height="28" rx="3" fill="#f5cf6f" opacity="0.85"/>
+      <rect x="36" width="28" height="28" rx="3" fill="#f5cf6f" opacity="0.7"/>
+      <rect x="72" width="28" height="28" rx="3" fill="#f5cf6f" opacity="0.55"/>
+      <rect y="36" width="28" height="28" rx="3" fill="#f5cf6f" opacity="0.7"/>
+      <rect x="36" y="36" width="28" height="28" rx="3" fill="#f5cf6f" opacity="0.55"/>
+      <rect x="72" y="36" width="28" height="28" rx="3" fill="#f5cf6f" opacity="0.4"/>
+    </g>
+
+    <!-- 3. Encrypt -->
+    <rect x="460" y="140" width="160" height="120" rx="10" fill="#1e2740" stroke="#3b486b"/>
+    <text x="540" y="120" fill="#e6e9f5" font-size="14" font-weight="700">encrypt</text>
+    <text x="540" y="280" fill="#7d88a8">AES-256-GCM + SHA-256</text>
+    <g transform="translate(498 168)">
+      <!-- padlock -->
+      <rect width="80" height="56" y="8" rx="4" fill="#2a3458" stroke="#8b5cf6" stroke-width="1.5"/>
+      <path d="M16 8 Q16 -4 40 -4 Q64 -4 64 8" fill="none" stroke="#8b5cf6" stroke-width="3"/>
+      <circle cx="40" cy="32" r="6" fill="#8b5cf6">
+        <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- 4. Shard router -->
+    <rect x="680" y="140" width="160" height="120" rx="10" fill="#1e2740" stroke="#3b486b"/>
+    <text x="760" y="120" fill="#e6e9f5" font-size="14" font-weight="700">shard router</text>
+    <text x="760" y="280" fill="#7d88a8">channel = SHA-256[0..4] mod N</text>
+    <g transform="translate(700 168)">
+      <circle cx="20" cy="28" r="14" fill="#2a3458" stroke="#4f8df0" stroke-width="1.5"/>
+      <text x="20" y="33" fill="#4f8df0" font-size="11">SHA</text>
+      <line x1="34" y1="28" x2="120" y2="10" stroke="#4f8df0" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <line x1="34" y1="28" x2="120" y2="28" stroke="#4f8df0" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <line x1="34" y1="28" x2="120" y2="46" stroke="#4f8df0" stroke-width="1.5" stroke-dasharray="3 3"/>
+    </g>
+
+    <!-- 5. Discord channels -->
+    <rect x="900" y="60"  width="240" height="280" rx="10" fill="#1e2740" stroke="#3b486b"/>
+    <text x="1020" y="40" fill="#e6e9f5" font-size="14" font-weight="700">Discord channels</text>
+    <text x="1020" y="360" fill="#7d88a8">your private server</text>
+    <g transform="translate(920 80)">
+      <rect width="200" height="42" rx="4" fill="#2a3458" stroke="#4f8df0" opacity="0.7"/>
+      <text x="100" y="27" fill="#9aa6d4" font-size="12">#fs-metadata</text>
+      <rect y="52" width="200" height="42" rx="4" fill="#2a3458" stroke="#4f8df0" opacity="0.7"/>
+      <text x="100" y="79" fill="#9aa6d4" font-size="12">#fs-data-0</text>
+      <rect y="104" width="200" height="42" rx="4" fill="#2a3458" stroke="#4f8df0" opacity="0.7"/>
+      <text x="100" y="131" fill="#9aa6d4" font-size="12">#fs-data-1</text>
+      <rect y="156" width="200" height="42" rx="4" fill="#2a3458" stroke="#4f8df0" opacity="0.7"/>
+      <text x="100" y="183" fill="#9aa6d4" font-size="12">#fs-data-2</text>
+      <rect y="208" width="200" height="42" rx="4" fill="#2a3458" stroke="#4f8df0" opacity="0.7"/>
+      <text x="100" y="235" fill="#9aa6d4" font-size="12">#fs-data-3</text>
+    </g>
+
+    <!-- Static connector arrows -->
+    <g stroke="#4f8df0" stroke-width="2" fill="none">
+      <line x1="180" y1="200" x2="240" y2="200" marker-end="url(#arrow)"/>
+      <line x1="400" y1="200" x2="460" y2="200" marker-end="url(#arrow)"/>
+      <line x1="620" y1="200" x2="680" y2="200" marker-end="url(#arrow)"/>
+      <line x1="840" y1="200" x2="900" y2="200" marker-end="url(#arrow)"/>
+    </g>
+  </g>
+
+  <!-- ─── Animated chunks moving through the pipeline ─── -->
+  <!-- Chunk 1 (yellow, gold) -->
+  <g>
+    <rect width="14" height="14" rx="2" fill="#f5cf6f">
+      <animate attributeName="x" values="115;320;540;760;1020" keyTimes="0;0.25;0.5;0.75;1" dur="5s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="180;180;180;180;105" keyTimes="0;0.25;0.5;0.75;1" dur="5s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#f5cf6f;#f5cf6f;#8b5cf6;#8b5cf6;#4f8df0" keyTimes="0;0.4;0.5;0.7;1" dur="5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- Chunk 2 -->
+  <g>
+    <rect width="14" height="14" rx="2" fill="#f5cf6f">
+      <animate attributeName="x" values="115;320;540;760;1020" keyTimes="0;0.25;0.5;0.75;1" dur="5s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="200;200;200;200;157" keyTimes="0;0.25;0.5;0.75;1" dur="5s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#f5cf6f;#f5cf6f;#8b5cf6;#8b5cf6;#4f8df0" keyTimes="0;0.4;0.5;0.7;1" dur="5s" begin="1s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- Chunk 3 -->
+  <g>
+    <rect width="14" height="14" rx="2" fill="#f5cf6f">
+      <animate attributeName="x" values="115;320;540;760;1020" keyTimes="0;0.25;0.5;0.75;1" dur="5s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="220;220;220;220;209" keyTimes="0;0.25;0.5;0.75;1" dur="5s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#f5cf6f;#f5cf6f;#8b5cf6;#8b5cf6;#4f8df0" keyTimes="0;0.4;0.5;0.7;1" dur="5s" begin="2s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- Chunk 4 -->
+  <g>
+    <rect width="14" height="14" rx="2" fill="#f5cf6f">
+      <animate attributeName="x" values="115;320;540;760;1020" keyTimes="0;0.25;0.5;0.75;1" dur="5s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="240;240;240;240;261" keyTimes="0;0.25;0.5;0.75;1" dur="5s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#f5cf6f;#f5cf6f;#8b5cf6;#8b5cf6;#4f8df0" keyTimes="0;0.4;0.5;0.7;1" dur="5s" begin="3s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+</svg>
